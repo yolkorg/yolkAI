@@ -1,0 +1,7 @@
+{
+    "name": "yolkai",
+    "type": "module",
+    "dependencies": {
+        "yolkbot": "^0.0.3"
+    }
+}
