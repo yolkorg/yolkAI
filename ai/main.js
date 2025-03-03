@@ -1,9 +1,10 @@
-import Bot from 'yolkbot/bot';
+import Bot from 'yolkbot-alpha/bot';
 
-import FireDispatch from 'yolkbot/dispatch/FireDispatch.js';
-import LookAtDispatch from 'yolkbot/dispatch/LookAtDispatch.js';
-import ReloadDispatch from 'yolkbot/dispatch/ReloadDispatch.js';
-import SpawnDispatch from 'yolkbot/dispatch/SpawnDispatch.js';
+import FireDispatch from 'yolkbot-alpha/dispatch/FireDispatch.js';
+import LookAtDispatch from 'yolkbot-alpha/dispatch/LookAtDispatch.js';
+import MeleeDispatch from 'yolkbot-alpha/dispatch/MeleeDispatch';
+import ReloadDispatch from 'yolkbot-alpha/dispatch/ReloadDispatch.js';
+import SpawnDispatch from 'yolkbot-alpha/dispatch/SpawnDispatch.js';
 
 const bot = new Bot({ name: 'selfbot' });
 
