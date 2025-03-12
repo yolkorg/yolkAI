@@ -2,6 +2,6 @@
     "name": "yolkai",
     "type": "module",
     "dependencies": {
-        "yolkbot-alpha": "^0.1.0-d"
+        "yolkbot": "^0.1.0-alpha.3"
     }
 }

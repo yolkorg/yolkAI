@@ -1,16 +1,51 @@
-import Bot from 'yolkbot-alpha/bot';
+// constants
+const constants = {
+    /*
+        the gun to use given the following values:
 
-import FireDispatch from 'yolkbot-alpha/dispatch/FireDispatch.js';
-import LookAtDispatch from 'yolkbot-alpha/dispatch/LookAtDispatch.js';
-import MeleeDispatch from 'yolkbot-alpha/dispatch/MeleeDispatch';
-import ReloadDispatch from 'yolkbot-alpha/dispatch/ReloadDispatch.js';
-import SpawnDispatch from 'yolkbot-alpha/dispatch/SpawnDispatch.js';
+        0 - eggk
+        1 - free ranger
+        2 - whipper
+        3 - crackshot
+    */
+    gunToUse: 0,
 
-const bot = new Bot({ name: 'selfbot' });
+    // the bot's name. simple enough.
+    name: 'yolkAI',
+
+    // a proxy to use with the bot.
+    // leave untouched to use no proxy.
+    proxy: null,
+
+    // a game code to join. you can specify one by using the following (ranked in priority):
+    // GAME_CODE=your-game-code node ai/main.js
+    // node ai/main.js your-game-code
+    // or by specifying it here:
+    code: 'your-game-code'
+}
+
+import Bot from 'yolkbot/bot';
+
+import FireDispatch from 'yolkbot/dispatch/FireDispatch.js';
+import LookAtDispatch from 'yolkbot/dispatch/LookAtDispatch.js';
+import MeleeDispatch from 'yolkbot/dispatch/MeleeDispatch';
+import ReloadDispatch from 'yolkbot/dispatch/ReloadDispatch.js';
+import SpawnDispatch from 'yolkbot/dispatch/SpawnDispatch.js';
+
+const gunData = {
+    0: { id: 0, roundsPer: 9, default: true },
+    1: { id: 2, roundsPer: 5 },
+    2: { id: 4, roundsPer: 12 },
+    3: { id: 5, roundsPer: 1 }
+};
+
+const gun = gunData[constants.gunToUse];
+
+const bot = new Bot({ name: constants.name, proxy: constants.proxy });
 
 let tickStage = 1;
 
-bot.on('join', (player) => {
+bot.on('playerJoin', (player) => {
     console.log(player.name, 'joined.');
 });
 
@@ -62,11 +97,10 @@ bot.on('tick', () => {
                 nearestPlayer.position.z - bot.me.position.z
             );
 
-            if (from <= 1)
-                return bot.dispatch(new MeleeDispatch());
+            if (from <= 1) return bot.dispatch(new MeleeDispatch());
         }
 
-        bot.dispatch(new FireDispatch(7));
+        bot.dispatch(new FireDispatch(gun.roundsPer));
 
         if (bot.me.weapons[0] && bot.me.weapons[0].ammo && bot.me.weapons[0].ammo.rounds <= 1) tickStage = 3;
         else tickStage = 1;
@@ -84,7 +118,7 @@ bot.on('tick', () => {
     else if (tickStage == 3) stage3();
 });
 
-await bot.join(process.env.GAME_CODE || process.argv[2]);
+await bot.join(process.env.GAME_CODE || process.argv[2] || constants.code);
 
-// bot.dispatch(new SaveLoadoutDispatch({ gunId: 5 })); // change gun to crackshot
+if (!gun.default) bot.dispatch(new SaveLoadoutDispatch({ gunId: gun.id })); // change gun to crackshot
 bot.dispatch(new SpawnDispatch()); // spawn in game
