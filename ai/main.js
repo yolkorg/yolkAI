@@ -30,6 +30,7 @@ import FireDispatch from 'yolkbot/dispatch/FireDispatch.js';
 import LookAtDispatch from 'yolkbot/dispatch/LookAtDispatch.js';
 import MeleeDispatch from 'yolkbot/dispatch/MeleeDispatch';
 import ReloadDispatch from 'yolkbot/dispatch/ReloadDispatch.js';
+import SaveLoadoutDispatch from 'yolkbot/dispatch/SaveLoadoutDispatch';
 import SpawnDispatch from 'yolkbot/dispatch/SpawnDispatch.js';
 
 const gunData = {
@@ -41,7 +42,10 @@ const gunData = {
 
 const gun = gunData[constants.gunToUse];
 
-const bot = new Bot({ name: constants.name, proxy: constants.proxy });
+const bot = new Bot({
+    proxy: constants.proxy,
+    intents: [Bot.Intents.PATHFINDING]
+});
 
 let tickStage = 1;
 
@@ -49,37 +53,11 @@ bot.on('playerJoin', (player) => {
     console.log(player.name, 'joined.');
 });
 
-const getNearestPlayer = () => {
-    let minDistance = Infinity;
-    let targetPlayer;
-
-    let players = Object.values(bot.players);
-
-    for (let i = 0; i < players.length; i++) {
-        const player = players[i];
-
-        if (player && player !== bot.me && player.playing && (bot.me.team === 0 || player.team !== bot.me.team) && player.hp > 0) {
-            const distance = Math.hypot(
-                player.position.x - bot.me.position.x,
-                player.position.y - bot.me.position.y,
-                player.position.z - bot.me.position.z
-            );
-
-            if (distance < minDistance) {
-                minDistance = distance;
-                targetPlayer = player;
-            }
-        }
-    }
-
-    return targetPlayer;
-}
-
 bot.on('tick', () => {
     if (bot.state.reloading || !bot.me.playing) return;
 
     const stage1 = () => {
-        let nearestPlayer = getNearestPlayer();
+        let nearestPlayer = bot.getBestTarget();
 
         if (nearestPlayer) {
             tickStage = 2;
@@ -88,7 +66,7 @@ bot.on('tick', () => {
     };
 
     const stage2 = () => {
-        let nearestPlayer = getNearestPlayer();
+        let nearestPlayer = bot.getBestTarget();
 
         if (nearestPlayer) {
             const from = Math.hypot(
@@ -118,7 +96,7 @@ bot.on('tick', () => {
     else if (tickStage == 3) stage3();
 });
 
-await bot.join(process.env.GAME_CODE || process.argv[2] || constants.code);
+await bot.join(constants.name, process.env.GAME_CODE || process.argv[2] || constants.code);
 
-if (!gun.default) bot.dispatch(new SaveLoadoutDispatch({ gunId: gun.id })); // change gun to crackshot
+if (!gun.default) bot.dispatch(new SaveLoadoutDispatch({ gunId: gun.id })); // change gun to selected
 bot.dispatch(new SpawnDispatch()); // spawn in game
